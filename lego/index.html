@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
+  <title>BrickShelf — LEGO Set Tracker</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --surface: rgba(255,255,255,.92);
+      --surface-solid: #fff;
+      --text: #17202a;
+      --muted: #667085;
+      --line: #dfe4ea;
+      --brand: #e11d2e;
+      --brand-dark: #b81220;
+      --accent: #f5c400;
+      --danger: #b42318;
+      --shadow: 0 16px 40px rgba(20, 29, 45, .10);
+      --radius: 18px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #11151b;
+        --surface: rgba(26,32,41,.94);
+        --surface-solid: #1a2029;
+        --text: #f5f7fa;
+        --muted: #aeb7c5;
+        --line: #313946;
+        --shadow: 0 18px 46px rgba(0,0,0,.28);
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(245,196,0,.16), transparent 30rem),
+        radial-gradient(circle at top right, rgba(225,29,46,.12), transparent 28rem),
+        var(--bg);
+    }
+
+    button, input, select { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+
+    .app { width: min(1200px, calc(100% - 28px)); margin: 0 auto; padding: 28px 0 56px; }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .brand-mark {
+      width: 48px; height: 48px; border-radius: 14px;
+      display: grid; place-items: center;
+      background: var(--brand); color: #fff; box-shadow: var(--shadow);
+      font-size: 24px;
+    }
+    h1 { margin: 0; font-size: clamp(1.55rem, 4vw, 2.25rem); letter-spacing: -.04em; }
+    .subtitle { margin: 3px 0 0; color: var(--muted); font-size: .95rem; }
+
+    .button {
+      border: 0; border-radius: 12px; padding: 11px 16px;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      cursor: pointer; font-weight: 750; transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+    .button:hover { transform: translateY(-1px); }
+    .button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid rgba(245,196,0,.55); outline-offset: 2px; }
+    .button-primary { color: #fff; background: var(--brand); box-shadow: 0 8px 22px rgba(225,29,46,.24); }
+    .button-primary:hover { background: var(--brand-dark); }
+    .button-secondary { color: var(--text); background: transparent; border: 1px solid var(--line); }
+    .button-danger { color: var(--danger); background: transparent; border: 1px solid color-mix(in srgb, var(--danger) 35%, var(--line)); }
+    .button:disabled { cursor: not-allowed; opacity: .55; transform: none; }
+
+    .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 22px; }
+    .summary-card {
+      background: var(--surface); border: 1px solid rgba(127,127,127,.16);
+      backdrop-filter: blur(12px); box-shadow: var(--shadow); border-radius: var(--radius); padding: 18px;
+    }
+    .summary-label { color: var(--muted); font-size: .82rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+    .summary-value { display: block; margin-top: 7px; font-size: clamp(1.35rem, 4vw, 2rem); font-weight: 850; letter-spacing: -.04em; }
+
+    .toolbar {
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      margin-bottom: 18px; padding: 12px;
+      background: var(--surface); border: 1px solid rgba(127,127,127,.16); border-radius: 15px;
+    }
+    .toolbar-label { color: var(--muted); font-size: .9rem; font-weight: 650; }
+    select, input {
+      width: 100%; border: 1px solid var(--line); border-radius: 11px;
+      background: var(--surface-solid); color: var(--text); padding: 11px 12px;
+    }
+    select { width: auto; min-width: 190px; }
+
+    .collection-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(245px, 1fr)); gap: 18px; }
+    .set-card {
+      position: relative; overflow: hidden; display: flex; flex-direction: column;
+      background: var(--surface); border: 1px solid rgba(127,127,127,.16); border-radius: var(--radius); box-shadow: var(--shadow);
+      min-width: 0;
+    }
+    .set-image-wrap { aspect-ratio: 4 / 3; background: #fff; display: grid; place-items: center; overflow: hidden; }
+    .set-image { width: 100%; height: 100%; object-fit: contain; padding: 12px; }
+    .image-placeholder { color: #8d96a3; text-align: center; padding: 20px; font-weight: 700; }
+    .set-content { padding: 16px; display: flex; flex-direction: column; flex: 1; }
+    .set-number { color: var(--brand); font-weight: 800; font-size: .82rem; letter-spacing: .04em; }
+    .set-title { margin: 5px 0 12px; font-size: 1.08rem; line-height: 1.28; }
+    .set-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 15px; }
+    .meta-item { background: color-mix(in srgb, var(--surface-solid) 74%, var(--bg)); border-radius: 10px; padding: 9px; min-width: 0; }
+    .meta-label { display: block; color: var(--muted); font-size: .72rem; margin-bottom: 3px; }
+    .meta-value { font-size: .9rem; font-weight: 750; overflow-wrap: anywhere; }
+    .card-actions { display: flex; gap: 9px; margin-top: auto; }
+    .card-actions .button { padding: 9px 11px; font-size: .86rem; flex: 1; text-decoration: none; }
+    .delete-button { flex: 0 0 42px !important; }
+
+    .empty-state {
+      grid-column: 1 / -1; text-align: center; padding: 64px 24px;
+      background: var(--surface); border: 1px dashed var(--line); border-radius: var(--radius);
+    }
+    .empty-state-icon { font-size: 44px; }
+    .empty-state h2 { margin: 12px 0 5px; }
+    .empty-state p { margin: 0 auto 18px; color: var(--muted); max-width: 490px; }
+
+    dialog {
+      border: 0; padding: 0; width: min(680px, calc(100% - 24px)); max-height: calc(100vh - 30px);
+      border-radius: 20px; color: var(--text); background: var(--surface-solid); box-shadow: 0 24px 90px rgba(0,0,0,.4);
+    }
+    dialog::backdrop { background: rgba(10,14,20,.68); backdrop-filter: blur(4px); }
+    .modal { display: flex; flex-direction: column; max-height: calc(100vh - 30px); }
+    .modal-header { padding: 20px 22px 14px; border-bottom: 1px solid var(--line); display: flex; align-items: start; justify-content: space-between; gap: 18px; }
+    .modal-header h2 { margin: 0; }
+    .modal-header p { margin: 5px 0 0; color: var(--muted); font-size: .9rem; }
+    .icon-button { border: 0; background: transparent; color: var(--muted); font-size: 22px; cursor: pointer; padding: 4px 7px; border-radius: 8px; }
+    .modal-body { padding: 20px 22px 24px; overflow-y: auto; }
+
+    .stack { display: grid; gap: 13px; }
+    .field { display: grid; gap: 6px; }
+    .field label { font-size: .84rem; font-weight: 750; }
+    .help { color: var(--muted); font-size: .78rem; line-height: 1.45; }
+    .search-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
+    .section-divider { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: .8rem; margin: 17px 0; }
+    .section-divider::before, .section-divider::after { content: ""; height: 1px; background: var(--line); flex: 1; }
+
+    .notice { padding: 12px 13px; border-radius: 11px; font-size: .86rem; line-height: 1.45; }
+    .notice-info { background: rgba(37,99,235,.10); border: 1px solid rgba(37,99,235,.24); }
+    .notice-error { background: rgba(180,35,24,.10); border: 1px solid rgba(180,35,24,.25); color: color-mix(in srgb, var(--danger) 82%, var(--text)); }
+
+    .preview { display: grid; grid-template-columns: 180px 1fr; gap: 18px; border: 1px solid var(--line); border-radius: 15px; padding: 14px; }
+    .preview-image { width: 100%; aspect-ratio: 4 / 3; object-fit: contain; background: #fff; border-radius: 10px; }
+    .preview h3 { margin: 4px 0 10px; }
+    .preview-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; color: var(--muted); font-size: .88rem; }
+    .preview-list strong { color: var(--text); }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+
+    .manual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .span-2 { grid-column: 1 / -1; }
+    .hidden { display: none !important; }
+
+    .toast {
+      position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 20px);
+      padding: 11px 16px; color: #fff; background: #17202a; border-radius: 12px;
+      box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: .22s ease; z-index: 100;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (max-width: 700px) {
+      .app { width: min(100% - 20px, 1200px); padding-top: 18px; }
+      header { align-items: flex-start; }
+      .subtitle { display: none; }
+      .summary-grid { gap: 9px; }
+      .summary-card { padding: 14px 12px; }
+      .summary-label { font-size: .68rem; }
+      .toolbar { align-items: stretch; flex-direction: column; }
+      select { width: 100%; }
+      .preview { grid-template-columns: 1fr; }
+      .preview-image { max-height: 230px; }
+    }
+
+    @media (max-width: 500px) {
+      .brand-mark { display: none; }
+      .button-text-optional { display: none; }
+      .summary-grid { grid-template-columns: 1fr; }
+      .summary-card { display: flex; align-items: center; justify-content: space-between; }
+      .summary-value { margin: 0; font-size: 1.25rem; }
+      .search-row, .manual-grid { grid-template-columns: 1fr; }
+      .span-2 { grid-column: auto; }
+      .modal-actions { flex-direction: column-reverse; }
+      .modal-actions .button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">▦</div>
+        <div>
+          <h1>BrickShelf</h1>
+          <p class="subtitle">Your personal LEGO set collection tracker</p>
+        </div>
+      </div>
+      <button id="openAddButton" class="button button-primary" type="button"><span aria-hidden="true">＋</span><span class="button-text-optional">Add Set</span></button>
+    </header>
+
+    <section class="summary-grid" aria-label="Collection summary">
+      <article class="summary-card"><span class="summary-label">Total sets</span><strong id="totalSets" class="summary-value">0</strong></article>
+      <article class="summary-card"><span class="summary-label">Total pieces</span><strong id="totalPieces" class="summary-value">0</strong></article>
+      <article class="summary-card"><span class="summary-label">Total value</span><strong id="totalValue" class="summary-value">£0.00</strong></article>
+    </section>
+
+    <section class="toolbar" aria-label="Collection controls">
+      <span class="toolbar-label">Collection</span>
+      <label>
+        <span class="hidden">Sort collection</span>
+        <select id="sortSelect">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="theme">Theme A–Z</option>
+          <option value="pieces-desc">Piece count: high to low</option>
+          <option value="pieces-asc">Piece count: low to high</option>
+          <option value="price-desc">Price: high to low</option>
+          <option value="price-asc">Price: low to high</option>
+        </select>
+      </label>
+    </section>
+
+    <section id="collectionGrid" class="collection-grid" aria-live="polite"></section>
+  </main>
+
+  <dialog id="addDialog">
+    <div class="modal">
+      <div class="modal-header">
+        <div><h2>Add a LEGO set</h2><p>Search Rebrickable or enter the details manually.</p></div>
+        <button id="closeDialogButton" class="icon-button" type="button" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <section id="searchSection" class="stack">
+          <div class="field">
+            <label for="apiKeyInput">Rebrickable API key</label>
+            <input id="apiKeyInput" type="password" autocomplete="off" placeholder="Paste your free Rebrickable API key" />
+            <div class="help">Stored only in this browser. Rebrickable currently requires a free API key for catalogue lookups.</div>
+          </div>
+          <div class="field">
+            <label for="searchInput">Set number or name</label>
+            <div class="search-row">
+              <input id="searchInput" type="search" placeholder="e.g. 10307 or Eiffel Tower" />
+              <button id="searchButton" class="button button-primary" type="button">Search</button>
+            </div>
+          </div>
+          <div id="searchMessage" class="notice hidden" role="status"></div>
+          <div id="previewContainer" class="hidden"></div>
+        </section>
+
+        <div class="section-divider">or add manually</div>
+
+        <form id="manualForm" class="manual-grid">
+          <div class="field">
+            <label for="manualSetNumber">Set number *</label>
+            <input id="manualSetNumber" required placeholder="10307" />
+          </div>
+          <div class="field">
+            <label for="manualYear">Year</label>
+            <input id="manualYear" type="number" min="1949" max="2100" placeholder="2022" />
+          </div>
+          <div class="field span-2">
+            <label for="manualName">Set name *</label>
+            <input id="manualName" required placeholder="Eiffel Tower" />
+          </div>
+          <div class="field">
+            <label for="manualTheme">Theme</label>
+            <input id="manualTheme" placeholder="Icons" />
+          </div>
+          <div class="field">
+            <label for="manualPieces">Pieces</label>
+            <input id="manualPieces" type="number" min="0" step="1" placeholder="10001" />
+          </div>
+          <div class="field">
+            <label for="manualPrice">Original retail price (£)</label>
+            <input id="manualPrice" type="number" min="0" step="0.01" placeholder="554.99" />
+          </div>
+          <div class="field">
+            <label for="manualImage">Image URL</label>
+            <input id="manualImage" type="url" placeholder="https://..." />
+          </div>
+          <div class="field span-2">
+            <label for="manualBricklink">BrickLink URL</label>
+            <input id="manualBricklink" type="url" placeholder="Auto-generated when left blank" />
+          </div>
+          <div class="modal-actions span-2">
+            <button id="cancelManualButton" class="button button-secondary" type="button">Cancel</button>
+            <button class="button button-primary" type="submit">Add manually</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status"></div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const STORAGE_KEY = 'brickshelf.collection.v1';
+      const SORT_KEY = 'brickshelf.sort.v1';
+      const API_KEY_STORAGE = 'brickshelf.rebrickableKey.v1';
+      const CURRENCY = 'GBP';
+
+      const els = {
+        grid: document.getElementById('collectionGrid'),
+        totalSets: document.getElementById('totalSets'),
+        totalPieces: document.getElementById('totalPieces'),
+        totalValue: document.getElementById('totalValue'),
+        sort: document.getElementById('sortSelect'),
+        dialog: document.getElementById('addDialog'),
+        openAdd: document.getElementById('openAddButton'),
+        closeDialog: document.getElementById('closeDialogButton'),
+        cancelManual: document.getElementById('cancelManualButton'),
+        apiKey: document.getElementById('apiKeyInput'),
+        searchInput: document.getElementById('searchInput'),
+        searchButton: document.getElementById('searchButton'),
+        searchMessage: document.getElementById('searchMessage'),
+        preview: document.getElementById('previewContainer'),
+        manualForm: document.getElementById('manualForm'),
+        toast: document.getElementById('toast')
+      };
+
+      let collection = loadCollection();
+      let previewSet = null;
+
+      const numberFormatter = new Intl.NumberFormat();
+      const currencyFormatter = new Intl.NumberFormat(undefined, { style: 'currency', currency: CURRENCY });
+
+      function loadCollection() {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+          return Array.isArray(parsed) ? parsed.filter(item => item && item.id && item.name) : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function persistCollection() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(collection));
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
+      }
+
+      function normaliseSetNumber(value) {
+        return String(value || '').trim().replace(/-\d+$/, '');
+      }
+
+      function bricklinkUrlFor(setNumber) {
+        const clean = normaliseSetNumber(setNumber);
+        return `https://www.bricklink.com/v2/catalog/catalogitem.page?S=${encodeURIComponent(clean)}-1`;
+      }
+
+      function createId() {
+        return `${Date.now().toString(36)}-${crypto.getRandomValues(new Uint32Array(1))[0].toString(36)}`;
+      }
+
+      function render() {
+        const sorted = [...collection].sort(getComparator(els.sort.value));
+        renderSummary();
+
+        if (!sorted.length) {
+          els.grid.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon" aria-hidden="true">🧱</div>
+              <h2>Your collection is empty</h2>
+              <p>Add your first set to start tracking pieces, value, themes and release years.</p>
+              <button class="button button-primary" type="button" data-action="open-add">Add your first set</button>
+            </div>`;
+          return;
+        }
+
+        els.grid.innerHTML = sorted.map(set => {
+          const image = set.imageUrl
+            ? `<img class="set-image" src="${escapeHtml(set.imageUrl)}" alt="${escapeHtml(set.name)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'image-placeholder',textContent:'Image unavailable'}))">`
+            : '<div class="image-placeholder">No image available</div>';
+          return `
+            <article class="set-card">
+              <div class="set-image-wrap">${image}</div>
+              <div class="set-content">
+                <span class="set-number">SET ${escapeHtml(normaliseSetNumber(set.setNumber) || '—')}</span>
+                <h2 class="set-title">${escapeHtml(set.name)}</h2>
+                <div class="set-meta">
+                  <div class="meta-item"><span class="meta-label">Theme</span><span class="meta-value">${escapeHtml(set.theme || 'Unknown')}</span></div>
+                  <div class="meta-item"><span class="meta-label">Year</span><span class="meta-value">${escapeHtml(set.year || '—')}</span></div>
+                  <div class="meta-item"><span class="meta-label">Pieces</span><span class="meta-value">${numberFormatter.format(Number(set.pieces) || 0)}</span></div>
+                  <div class="meta-item"><span class="meta-label">Retail price</span><span class="meta-value">${currencyFormatter.format(Number(set.retailPrice) || 0)}</span></div>
+                </div>
+                <div class="card-actions">
+                  <a class="button button-secondary" href="${escapeHtml(set.bricklinkUrl || bricklinkUrlFor(set.setNumber))}" target="_blank" rel="noopener noreferrer">BrickLink ↗</a>
+                  <button class="button button-danger delete-button" type="button" data-action="delete" data-id="${escapeHtml(set.id)}" aria-label="Delete ${escapeHtml(set.name)}">×</button>
+                </div>
+              </div>
+            </article>`;
+        }).join('');
+      }
+
+      function renderSummary() {
+        const totalPieces = collection.reduce((sum, set) => sum + (Number(set.pieces) || 0), 0);
+        const totalValue = collection.reduce((sum, set) => sum + (Number(set.retailPrice) || 0), 0);
+        els.totalSets.textContent = numberFormatter.format(collection.length);
+        els.totalPieces.textContent = numberFormatter.format(totalPieces);
+        els.totalValue.textContent = currencyFormatter.format(totalValue);
+      }
+
+      function getComparator(sort) {
+        const text = (v) => String(v || '').localeCompare(String(v || ''), undefined, { sensitivity: 'base', numeric: true });
+        switch (sort) {
+          case 'oldest': return (a, b) => (Number(a.year) || 9999) - (Number(b.year) || 9999) || text(a.name, b.name);
+          case 'theme': return (a, b) => text(a.theme, b.theme) || (Number(b.year) || 0) - (Number(a.year) || 0) || text(a.name, b.name);
+          case 'pieces-desc': return (a, b) => (Number(b.pieces) || 0) - (Number(a.pieces) || 0) || text(a.name, b.name);
+          case 'pieces-asc': return (a, b) => (Number(a.pieces) || 0) - (Number(b.pieces) || 0) || text(a.name, b.name);
+          case 'price-desc': return (a, b) => (Number(b.retailPrice) || 0) - (Number(a.retailPrice) || 0) || text(a.name, b.name);
+          case 'price-asc': return (a, b) => (Number(a.retailPrice) || 0) - (Number(b.retailPrice) || 0) || text(a.name, b.name);
+          case 'newest':
+          default: return (a, b) => (Number(b.year) || 0) - (Number(a.year) || 0) || text(a.name, b.name);
+        }
+      }
+
+      function addSet(data) {
+        const cleanNumber = normaliseSetNumber(data.setNumber);
+        const duplicate = collection.some(set => normaliseSetNumber(set.setNumber).toLowerCase() === cleanNumber.toLowerCase());
+        if (duplicate && !confirm(`Set ${cleanNumber} is already in your collection. Add another copy?`)) return false;
+
+        collection.push({
+          id: createId(),
+          setNumber: cleanNumber,
+          name: String(data.name || '').trim(),
+          theme: String(data.theme || '').trim(),
+          year: Number(data.year) || null,
+          pieces: Number(data.pieces) || 0,
+          retailPrice: Number(data.retailPrice) || 0,
+          imageUrl: String(data.imageUrl || '').trim(),
+          bricklinkUrl: String(data.bricklinkUrl || '').trim() || bricklinkUrlFor(cleanNumber),
+          dateAdded: new Date().toISOString()
+        });
+        persistCollection();
+        render();
+        return true;
+      }
+
+      function removeSet(id) {
+        const set = collection.find(item => item.id === id);
+        if (!set || !confirm(`Remove “${set.name}” from your collection?`)) return;
+        collection = collection.filter(item => item.id !== id);
+        persistCollection();
+        render();
+        showToast('Set removed');
+      }
+
+      function openDialog() {
+        clearSearchState();
+        els.apiKey.value = localStorage.getItem(API_KEY_STORAGE) || '';
+        els.dialog.showModal();
+        setTimeout(() => els.searchInput.focus(), 0);
+      }
+
+      function closeDialog() {
+        els.dialog.close();
+        els.manualForm.reset();
+        clearSearchState();
+      }
+
+      function clearSearchState() {
+        previewSet = null;
+        els.searchInput.value = '';
+        els.preview.classList.add('hidden');
+        els.preview.innerHTML = '';
+        els.searchMessage.classList.add('hidden');
+        els.searchMessage.textContent = '';
+      }
+
+      function setSearchMessage(message, type = 'info') {
+        els.searchMessage.className = `notice notice-${type}`;
+        els.searchMessage.textContent = message;
+      }
+
+      async function searchRebrickable() {
+        const apiKey = els.apiKey.value.trim();
+        const query = els.searchInput.value.trim();
+        if (!query) {
+          setSearchMessage('Enter a set number or name to search.', 'error');
+          els.searchInput.focus();
+          return;
+        }
+        if (!apiKey) {
+          setSearchMessage('A Rebrickable API key is required for automatic lookup. Enter one above or use the manual form.', 'error');
+          els.apiKey.focus();
+          prefillManualFromQuery(query);
+          return;
+        }
+
+        localStorage.setItem(API_KEY_STORAGE, apiKey);
+        els.searchButton.disabled = true;
+        els.searchButton.textContent = 'Searching…';
+        setSearchMessage('Searching the Rebrickable catalogue…', 'info');
+        els.preview.classList.add('hidden');
+
+        try {
+          const looksLikeNumber = /^\d{3,}(?:-\d+)?$/.test(query);
+          let result;
+
+          if (looksLikeNumber) {
+            const base = normaliseSetNumber(query);
+            const candidates = [`${base}-1`, base];
+            for (const candidate of candidates) {
+              const response = await fetch(`https://rebrickable.com/api/v3/lego/sets/${encodeURIComponent(candidate)}/`, {
+                headers: { Authorization: `key ${apiKey}` }
+              });
+              if (response.ok) { result = await response.json(); break; }
+              if (response.status === 401 || response.status === 403) throw new Error('The API key was rejected. Check the key and try again.');
+            }
+          } else {
+            const response = await fetch(`https://rebrickable.com/api/v3/lego/sets/?search=${encodeURIComponent(query)}&page_size=1&ordering=-year`, {
+              headers: { Authorization: `key ${apiKey}` }
+            });
+            if (response.status === 401 || response.status === 403) throw new Error('The API key was rejected. Check the key and try again.');
+            if (!response.ok) throw new Error(`Lookup failed with status ${response.status}.`);
+            const payload = await response.json();
+            result = payload.results?.[0];
+          }
+
+          if (!result) throw new Error('No matching set was found. You can add it manually below.');
+
+          previewSet = {
+            setNumber: normaliseSetNumber(result.set_num),
+            name: result.name || 'Unnamed set',
+            theme: result.theme_name || '',
+            year: result.year || null,
+            pieces: result.num_parts || 0,
+            retailPrice: 0,
+            imageUrl: result.set_img_url || '',
+            bricklinkUrl: bricklinkUrlFor(result.set_num)
+          };
+          renderPreview();
+          setSearchMessage('Set found. Add the original retail price if known, then confirm.', 'info');
+        } catch (error) {
+          console.error(error);
+          setSearchMessage(error.message || 'Automatic lookup failed. Use the manual form below.', 'error');
+          prefillManualFromQuery(query);
+        } finally {
+          els.searchButton.disabled = false;
+          els.searchButton.textContent = 'Search';
+        }
+      }
+
+      function renderPreview() {
+        if (!previewSet) return;
+        els.preview.innerHTML = `
+          <div class="preview">
+            ${previewSet.imageUrl ? `<img class="preview-image" src="${escapeHtml(previewSet.imageUrl)}" alt="${escapeHtml(previewSet.name)}">` : '<div class="preview-image image-placeholder">No image</div>'}
+            <div>
+              <span class="set-number">SET ${escapeHtml(previewSet.setNumber)}</span>
+              <h3>${escapeHtml(previewSet.name)}</h3>
+              <ul class="preview-list">
+                <li><strong>Theme:</strong> ${escapeHtml(previewSet.theme || 'Unknown')}</li>
+                <li><strong>Year:</strong> ${escapeHtml(previewSet.year || 'Unknown')}</li>
+                <li><strong>Pieces:</strong> ${numberFormatter.format(previewSet.pieces || 0)}</li>
+              </ul>
+              <div class="field" style="margin-top:12px">
+                <label for="previewPrice">Original retail price (£)</label>
+                <input id="previewPrice" type="number" min="0" step="0.01" placeholder="0.00" />
+              </div>
+              <div class="modal-actions">
+                <button id="addPreviewButton" class="button button-primary" type="button">Add to collection</button>
+              </div>
+            </div>
+          </div>`;
+        els.preview.classList.remove('hidden');
+        document.getElementById('addPreviewButton').addEventListener('click', () => {
+          previewSet.retailPrice = Number(document.getElementById('previewPrice').value) || 0;
+          if (addSet(previewSet)) {
+            closeDialog();
+            showToast('Set added');
+          }
+        });
+      }
+
+      function prefillManualFromQuery(query) {
+        if (/^\d{3,}(?:-\d+)?$/.test(query)) document.getElementById('manualSetNumber').value = normaliseSetNumber(query);
+        else document.getElementById('manualName').value = query;
+      }
+
+      function handleManualSubmit(event) {
+        event.preventDefault();
+        const data = {
+          setNumber: document.getElementById('manualSetNumber').value,
+          name: document.getElementById('manualName').value,
+          theme: document.getElementById('manualTheme').value,
+          year: document.getElementById('manualYear').value,
+          pieces: document.getElementById('manualPieces').value,
+          retailPrice: document.getElementById('manualPrice').value,
+          imageUrl: document.getElementById('manualImage').value,
+          bricklinkUrl: document.getElementById('manualBricklink').value
+        };
+        if (addSet(data)) {
+          closeDialog();
+          showToast('Set added');
+        }
+      }
+
+      let toastTimer;
+      function showToast(message) {
+        clearTimeout(toastTimer);
+        els.toast.textContent = message;
+        els.toast.classList.add('show');
+        toastTimer = setTimeout(() => els.toast.classList.remove('show'), 2200);
+      }
+
+      els.openAdd.addEventListener('click', openDialog);
+      els.closeDialog.addEventListener('click', closeDialog);
+      els.cancelManual.addEventListener('click', closeDialog);
+      els.searchButton.addEventListener('click', searchRebrickable);
+      els.searchInput.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); searchRebrickable(); } });
+      els.manualForm.addEventListener('submit', handleManualSubmit);
+      els.sort.addEventListener('change', () => { localStorage.setItem(SORT_KEY, els.sort.value); render(); });
+      els.grid.addEventListener('click', event => {
+        const button = event.target.closest('[data-action]');
+        if (!button) return;
+        if (button.dataset.action === 'delete') removeSet(button.dataset.id);
+        if (button.dataset.action === 'open-add') openDialog();
+      });
+      els.dialog.addEventListener('click', event => {
+        const rect = els.dialog.getBoundingClientRect();
+        const outside = event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom;
+        if (outside) closeDialog();
+      });
+
+      const savedSort = localStorage.getItem(SORT_KEY);
+      if ([...els.sort.options].some(option => option.value === savedSort)) els.sort.value = savedSort;
+      render();
+    })();
+  </script>
+</body>
+</html>
