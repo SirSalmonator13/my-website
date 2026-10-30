@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="light dark" />
-  <title>BrickShelf — LEGO Set Tracker</title>
+  <title>LEGO Collection | Cameron's Stuff</title>
   <style>
     :root {
       --bg: #f4f6f8;
@@ -196,9 +196,30 @@
       .modal-actions { flex-direction: column-reverse; }
       .modal-actions .button { width: 100%; }
     }
+
+    .site-nav {width:100%;background:#111827;color:#fff;position:sticky;top:0;z-index:1000;box-shadow:0 2px 12px rgba(0,0,0,.18)}
+    .site-nav-inner {width:min(1200px,calc(100% - 28px));margin:0 auto;min-height:58px;display:flex;align-items:center;justify-content:space-between;gap:18px}
+    .site-nav a {color:#e5e7eb;text-decoration:none;font-weight:700}
+    .site-nav a:hover,.site-nav a:focus {color:#fff}
+    .site-nav-links {display:flex;flex-wrap:wrap;gap:14px;font-size:.9rem}
+    @media (max-width:700px){.site-nav-inner{padding:10px 0;align-items:flex-start;flex-direction:column}}
+
   </style>
 </head>
 <body>
+  <nav class="site-nav" aria-label="Cameron's Stuff navigation">
+    <div class="site-nav-inner">
+      <a href="../">Cameron's Stuff</a>
+      <div class="site-nav-links">
+        <a href="../#games">Games Tracker</a>
+        <a href="../#movies">Movie Tracker</a>
+        <a href="./" aria-current="page">LEGO Collection</a>
+        <a href="../#tools">Hobby Tools</a>
+        <a href="../#lists">Useful Lists</a>
+      </div>
+    </div>
+  </nav>
+
   <main class="app">
     <header>
       <div class="brand">
