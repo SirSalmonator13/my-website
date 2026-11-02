@@ -1,94 +1,155 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Cameron's Movie Tracker">
-  <title>Movie Tracker | Cameron's Stuff</title>
-  <link rel="stylesheet" href="../style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Cameron's Movie Tracker">
+<title>Movie Tracker | Cameron's Stuff</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+.movie-app{width:min(92%,1180px);margin:auto;padding:48px 0 80px}
+.movie-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:26px}
+.movie-head h1{margin:0;color:var(--jade-950,#073b33);font-size:clamp(2.5rem,6vw,4.8rem)}
+.movie-head p{max-width:650px;color:var(--muted,#61756f);margin:10px 0 0}
+.actions,.card-actions,.dialog-actions{display:flex;gap:9px;flex-wrap:wrap}
+.mbtn{border:1px solid transparent;border-radius:999px;padding:10px 16px;min-height:42px;cursor:pointer;font:inherit;font-weight:800;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.mbtn.primary{background:var(--jade-700,#117363);color:#fff}
+.mbtn.secondary{background:#fff;color:var(--jade-800,#0d5e50);border-color:var(--jade-200,#bde8db)}
+.mbtn.danger{background:#fff;color:#a62a2a;border-color:#efc6c6}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+.stat,.toolbar,.movie-card{background:#fff;border:1px solid var(--border,#d9e7e2);box-shadow:var(--shadow,0 18px 45px rgba(7,59,51,.09))}
+.stat{border-radius:22px;padding:18px}.stat span{display:block;color:var(--muted,#61756f);font-size:.72rem;font-weight:850;text-transform:uppercase;letter-spacing:.09em}.stat strong{display:block;margin-top:5px;font-size:1.8rem;color:var(--jade-950,#073b33)}
+.toolbar{display:grid;grid-template-columns:1fr auto auto;gap:10px;padding:12px;border-radius:20px;margin-bottom:22px}
+.min,.msel,.mtext{width:100%;border:1px solid var(--border,#d9e7e2);background:#fff;color:var(--text,#18312b);border-radius:12px;padding:10px 12px;font:inherit}
+.mtext{min-height:95px;resize:vertical}.min:focus,.msel:focus,.mtext:focus{outline:3px solid rgba(34,168,138,.16);border-color:var(--jade-500,#22a88a)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
+.movie-card{overflow:hidden;border-radius:24px;display:flex;flex-direction:column}
+.poster{aspect-ratio:2/3;background:var(--jade-50,#f1fbf7);display:grid;place-items:center;overflow:hidden}.poster img{width:100%;height:100%;object-fit:cover}.poster div{color:var(--muted,#61756f);font-weight:750}
+.card-body{padding:16px;display:flex;flex-direction:column;flex:1}.title-row{display:flex;justify-content:space-between;gap:10px}.title-row h2{margin:0;font-size:1.15rem;color:var(--jade-950,#073b33)}.year{font-size:.84rem;color:var(--muted,#61756f);font-weight:750}
+.pill{display:inline-flex;align-self:flex-start;margin:10px 0;padding:5px 9px;border-radius:999px;background:var(--jade-100,#dcf4ec);color:var(--jade-900,#0a4a3f);font-size:.74rem;font-weight:850}
+.meta,.plot,.note{color:var(--muted,#61756f);font-size:.86rem}.plot{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;margin:0 0 14px}.note{border-top:1px solid var(--border,#d9e7e2);padding-top:10px;margin-top:auto}.card-actions{margin-top:12px}.card-actions .mbtn{flex:1;padding:8px 10px;font-size:.82rem}
+.empty{grid-column:1/-1;text-align:center;border:1px dashed var(--jade-200,#bde8db);border-radius:24px;background:#fff;padding:54px 22px}.empty h2{margin:0 0 7px;color:var(--jade-950,#073b33)}.empty p{color:var(--muted,#61756f)}
+dialog{width:min(720px,calc(100% - 24px));max-height:calc(100vh - 28px);padding:0;border:0;border-radius:24px;background:#fff;color:var(--text,#18312b);box-shadow:0 25px 90px rgba(0,0,0,.3)}dialog::backdrop{background:rgba(5,25,21,.62);backdrop-filter:blur(4px)}
+.dshell{max-height:calc(100vh - 28px);display:flex;flex-direction:column}.dhead{padding:19px 22px 14px;border-bottom:1px solid var(--border,#d9e7e2);display:flex;justify-content:space-between;gap:16px}.dhead h2{margin:0;color:var(--jade-950,#073b33)}.dhead p{margin:4px 0 0;color:var(--muted,#61756f);font-size:.88rem}.x{border:0;background:transparent;font-size:1.5rem;cursor:pointer}.dbody{padding:20px 22px 24px;overflow:auto}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:grid;gap:5px}.field label{font-size:.82rem;font-weight:800}.help{color:var(--muted,#61756f);font-size:.76rem}.wide{grid-column:1/-1}
+.searchbox{position:relative}.results{position:absolute;left:0;right:0;top:calc(100% + 5px);z-index:20;max-height:360px;overflow:auto;background:#fff;border:1px solid var(--border,#d9e7e2);border-radius:15px;box-shadow:0 16px 45px rgba(0,0,0,.16)}
+.result{width:100%;border:0;border-bottom:1px solid var(--border,#d9e7e2);background:#fff;text-align:left;display:grid;grid-template-columns:45px 1fr;gap:10px;padding:9px;cursor:pointer}.result:last-child{border-bottom:0}.result:hover{background:var(--jade-50,#f1fbf7)}.result img{width:45px;height:68px;object-fit:cover;border-radius:7px}.rtitle{font-weight:850}.rmeta{font-size:.78rem;color:var(--muted,#61756f)}
+.preview{display:grid;grid-template-columns:105px 1fr;gap:14px;margin-top:13px;padding:12px;border:1px solid var(--jade-200,#bde8db);background:var(--jade-50,#f1fbf7);border-radius:17px}.preview img{width:105px;aspect-ratio:2/3;object-fit:cover;border-radius:10px}.preview h3{margin:0 0 5px}.preview p{margin:3px 0;color:var(--muted,#61756f);font-size:.83rem}
+.notice{margin-top:9px;padding:9px 11px;border-radius:12px;font-size:.83rem}.info{background:var(--jade-50,#f1fbf7);border:1px solid var(--jade-200,#bde8db)}.err{background:#fff1f1;border:1px solid #efc6c6;color:#982525}
+.hidden{display:none!important}.credits{text-align:center;color:var(--muted,#61756f);font-size:.78rem;margin-top:40px;padding-top:15px;border-top:1px solid var(--border,#d9e7e2)}.credits img{max-width:90px;max-height:32px;display:block;margin:0 auto 7px}
+.toast{position:fixed;z-index:2000;left:50%;bottom:22px;transform:translate(-50%,18px);opacity:0;pointer-events:none;transition:.2s;padding:10px 15px;background:var(--jade-950,#073b33);color:#fff;border-radius:999px}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:760px){.movie-head{align-items:flex-start;flex-direction:column}.summary{grid-template-columns:1fr}.toolbar,.form{grid-template-columns:1fr}.wide{grid-column:auto}.preview{grid-template-columns:75px 1fr}.preview img{width:75px}}
+</style>
 </head>
 <body>
+<header class="site-header"><div class="nav-container">
+<a class="site-title" href="../">Cameron's Stuff</a>
+<nav aria-label="Main navigation"><ul class="nav-links">
+<li><a href="../">Home</a></li><li><a href="./" aria-current="page">Movie Tracker</a></li>
+<li><a href="https://brickfolio-cameron.comtek-syste-2028.chatgpt.site/" target="_blank" rel="noopener noreferrer">LEGO Collection</a></li>
+<li><a href="../#lists">Useful Lists</a></li>
+</ul></nav></div></header>
 
-  <header class="site-header">
-    <div class="nav-container">
-      <a class="site-title" href="../">Cameron's Stuff</a>
+<main class="movie-app">
+<section class="movie-head">
+<div><p class="section-kicker">My collection</p><h1>Movie Tracker</h1><p>Search TMDB to add films, maintain a watchlist, record what you've watched, and add your own ratings and notes.</p></div>
+<div class="actions">
+<button id="addBtn" class="mbtn primary">+ Add movie</button>
+<button id="settingsBtn" class="mbtn secondary">API settings</button>
+<button id="exportBtn" class="mbtn secondary">Export</button>
+<label class="mbtn secondary" for="importFile">Import</label><input id="importFile" class="hidden" type="file" accept=".json,application/json">
+</div>
+</section>
 
-      <nav aria-label="Main navigation">
-        <ul class="nav-links">
-          <li><a href="../">Home</a></li>
-          <li><a href="./" aria-current="page">Movie Tracker</a></li>
-          <li>
-            <a href="https://brickfolio-cameron.comtek-syste-2028.chatgpt.site/"
-               target="_blank"
-               rel="noopener noreferrer">LEGO Collection</a>
-          </li>
-          <li><a href="../#lists">Useful Lists</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
+<section class="summary">
+<article class="stat"><span>Total movies</span><strong id="total">0</strong></article>
+<article class="stat"><span>Watchlist</span><strong id="watchlist">0</strong></article>
+<article class="stat"><span>Watched</span><strong id="watched">0</strong></article>
+</section>
 
-  <main>
-    <section class="hero">
-      <div class="hero-inner">
-        <p class="eyebrow">Watchlist</p>
-        <h1>Movie Tracker</h1>
-        <p class="hero-copy">
-          Keep track of films you want to watch, what you've seen, and your own ratings.
-        </p>
+<section class="toolbar">
+<input id="localSearch" class="min" type="search" placeholder="Search your collection...">
+<select id="filter" class="msel"><option value="all">All movies</option><option value="watchlist">Watchlist</option><option value="watched">Watched</option></select>
+<select id="sort" class="msel"><option value="added">Recently added</option><option value="title">Title A-Z</option><option value="year">Newest release</option><option value="mine">My rating</option><option value="tmdb">TMDB rating</option></select>
+</section>
 
-        <div class="hero-actions">
-          <a class="button button-primary" href="#watchlist">Watchlist</a>
-          <a class="button button-secondary" href="#watched">Watched</a>
-          <a class="button button-secondary" href="../">Back Home</a>
-        </div>
-      </div>
-    </section>
+<section id="grid" class="grid"></section>
 
-    <section id="watchlist" class="section">
-      <div class="content">
-        <div class="section-heading">
-          <p class="section-kicker">Up next</p>
-          <h2>Watchlist</h2>
-          <p>Films you want to watch can go here.</p>
-        </div>
+<section class="credits">
+<img src="tmdb-logo.svg" alt="TMDB" onerror="this.remove()">
+<p>This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+</section>
+</main>
 
-        <div class="feature-card">
-          <div>
-            <h3>Your watchlist</h3>
-            <p>This section is ready for your first movie entries.</p>
-          </div>
-          <a class="button button-small" href="#watchlist">Coming soon</a>
-        </div>
-      </div>
-    </section>
+<dialog id="movieDialog"><div class="dshell">
+<div class="dhead"><div><h2 id="dialogTitle">Add a movie</h2><p id="dialogSub">Search TMDB, choose a film, then add your tracking details.</p></div><button id="closeMovie" class="x" type="button">×</button></div>
+<div class="dbody">
+<section id="lookupArea">
+<div class="field"><label for="lookup">Search TMDB</label><div class="searchbox">
+<input id="lookup" class="min" type="search" autocomplete="off" placeholder="Start typing a film title...">
+<div id="results" class="results hidden"></div></div><span class="help">Type at least two characters.</span></div>
+<div id="notice" class="notice hidden"></div><div id="preview" class="hidden"></div>
+</section>
 
-    <section id="watched" class="section section-tint">
-      <div class="content">
-        <div class="section-heading">
-          <p class="section-kicker">History</p>
-          <h2>Watched</h2>
-          <p>Keep a record of films you've watched, ratings, dates and notes.</p>
-        </div>
+<form id="movieForm" class="form" style="margin-top:17px">
+<input id="editingId" type="hidden"><input id="tmdbId" type="hidden"><input id="posterPath" type="hidden"><input id="tmdbRating" type="hidden"><input id="runtime" type="hidden"><input id="genres" type="hidden"><input id="releaseDate" type="hidden">
+<div class="field wide"><label for="title">Title *</label><input id="title" class="min" required></div>
+<div class="field"><label for="year">Year</label><input id="year" class="min" type="number" min="1880" max="2200"></div>
+<div class="field"><label for="status">Status</label><select id="status" class="msel"><option value="watchlist">Watchlist</option><option value="watched">Watched</option></select></div>
+<div class="field"><label for="myRating">My rating</label><select id="myRating" class="msel"><option value="">Not rated</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></div>
+<div class="field"><label for="watchedDate">Date watched</label><input id="watchedDate" class="min" type="date"></div>
+<div class="field wide"><label for="plot">Plot</label><textarea id="plot" class="mtext"></textarea></div>
+<div class="field wide"><label for="notes">My notes</label><textarea id="notes" class="mtext"></textarea></div>
+<div class="dialog-actions wide"><button id="cancelMovie" class="mbtn secondary" type="button">Cancel</button><button class="mbtn primary" type="submit">Save movie</button></div>
+</form>
+</div></div></dialog>
 
-        <div class="feature-card feature-card-highlight">
-          <div>
-            <h3>Viewing history</h3>
-            <p>This section is ready for completed films and personal ratings.</p>
-          </div>
-          <a class="button button-small" href="#watched">Coming soon</a>
-        </div>
-      </div>
-    </section>
-  </main>
+<dialog id="settingsDialog"><div class="dshell">
+<div class="dhead"><div><h2>TMDB API settings</h2><p>The token is saved only in this browser.</p></div><button id="closeSettings" class="x" type="button">×</button></div>
+<div class="dbody"><form id="settingsForm" class="form">
+<div class="field wide"><label for="token">TMDB API Read Access Token</label><input id="token" class="min" type="password" autocomplete="off"><span class="help">Use the long API Read Access Token from your TMDB API settings.</span></div>
+<div class="dialog-actions wide"><button id="clearToken" class="mbtn danger" type="button">Clear token</button><button class="mbtn primary" type="submit">Save token</button></div>
+</form></div></div></dialog>
 
-  <footer>
-    <p>&copy; <span id="year"></span> Cameron's Stuff</p>
-  </footer>
+<div id="toast" class="toast"></div>
 
-  <script>
-    document.getElementById("year").textContent = new Date().getFullYear();
-  </script>
-
-</body>
-</html>
+<script>
+(()=>{'use strict';
+const STORE='camerons.movies.v1',TOKEN='camerons.tmdbToken.v1',API='https://api.themoviedb.org/3',IMG='https://image.tmdb.org/t/p/w500';
+const $=id=>document.getElementById(id);
+const e={grid:$('grid'),total:$('total'),watchlist:$('watchlist'),watched:$('watched'),localSearch:$('localSearch'),filter:$('filter'),sort:$('sort'),addBtn:$('addBtn'),settingsBtn:$('settingsBtn'),exportBtn:$('exportBtn'),importFile:$('importFile'),movieDialog:$('movieDialog'),dialogTitle:$('dialogTitle'),dialogSub:$('dialogSub'),lookupArea:$('lookupArea'),lookup:$('lookup'),results:$('results'),notice:$('notice'),preview:$('preview'),form:$('movieForm'),editingId:$('editingId'),tmdbId:$('tmdbId'),posterPath:$('posterPath'),tmdbRating:$('tmdbRating'),runtime:$('runtime'),genres:$('genres'),releaseDate:$('releaseDate'),title:$('title'),year:$('year'),status:$('status'),myRating:$('myRating'),watchedDate:$('watchedDate'),plot:$('plot'),notes:$('notes'),settingsDialog:$('settingsDialog'),token:$('token'),toast:$('toast')};
+let movies=load(),timer,abort,toastTimer;
+function load(){try{const v=JSON.parse(localStorage.getItem(STORE)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
+function save(){localStorage.setItem(STORE,JSON.stringify(movies))}
+function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function pic(p){return p?IMG+p:''}
+function id(){return crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)}
+function render(){
+e.total.textContent=movies.length;e.watchlist.textContent=movies.filter(m=>m.status==='watchlist').length;e.watched.textContent=movies.filter(m=>m.status==='watched').length;
+let q=e.localSearch.value.trim().toLowerCase(),f=e.filter.value,list=movies.filter(m=>(f==='all'||m.status===f)&&(!q||[m.title,m.year,m.genres,m.notes,m.plot].join(' ').toLowerCase().includes(q)));
+list=[...list].sort(comp(e.sort.value));
+if(!list.length){e.grid.innerHTML=`<div class="empty"><h2>${movies.length?'No matching movies':'Your movie tracker is empty'}</h2><p>${movies.length?'Try another filter or search.':'Add your first film by searching TMDB.'}</p>${movies.length?'':'<button class="mbtn primary" data-action="add">Add your first movie</button>'}</div>`;return}
+e.grid.innerHTML=list.map(m=>{const meta=[m.runtime?m.runtime+' min':'',m.genres||'',m.tmdbRating?'TMDB '+Number(m.tmdbRating).toFixed(1)+'/10':'',m.myRating?'My rating '+m.myRating+'/10':''].filter(Boolean).join(' • ');return`<article class="movie-card"><div class="poster">${m.posterPath?`<img src="${esc(pic(m.posterPath))}" alt="${esc(m.title)} poster" loading="lazy">`:'<div>No poster available</div>'}</div><div class="card-body"><div class="title-row"><h2>${esc(m.title)}</h2><span class="year">${esc(m.year||'')}</span></div><span class="pill">${m.status==='watched'?'Watched':'Watchlist'}</span>${meta?`<div class="meta">${esc(meta)}</div>`:''}${m.plot?`<p class="plot">${esc(m.plot)}</p>`:''}${m.watchedDate?`<div class="note">Watched: ${esc(m.watchedDate)}</div>`:''}${m.notes?`<div class="note">${esc(m.notes)}</div>`:''}<div class="card-actions"><button class="mbtn secondary" data-action="edit" data-id="${m.id}">Edit</button><button class="mbtn danger" data-action="delete" data-id="${m.id}">Delete</button></div></div></article>`}).join('')}
+function comp(s){if(s==='title')return(a,b)=>a.title.localeCompare(b.title);if(s==='year')return(a,b)=>(b.year||0)-(a.year||0);if(s==='mine')return(a,b)=>(b.myRating||0)-(a.myRating||0);if(s==='tmdb')return(a,b)=>(b.tmdbRating||0)-(a.tmdbRating||0);return(a,b)=>String(b.addedAt).localeCompare(String(a.addedAt))}
+function reset(){e.form.reset();['editingId','tmdbId','posterPath','tmdbRating','runtime','genres','releaseDate'].forEach(x=>e[x].value='');e.lookup.value='';e.results.innerHTML='';e.results.classList.add('hidden');e.preview.innerHTML='';e.preview.classList.add('hidden');e.notice.classList.add('hidden');e.status.value='watchlist'}
+function openAdd(){reset();e.lookupArea.classList.remove('hidden');e.dialogTitle.textContent='Add a movie';e.dialogSub.textContent='Search TMDB, choose a film, then add your tracking details.';e.movieDialog.showModal();if(!localStorage.getItem(TOKEN))note('Add your TMDB token in API settings before searching.','info');setTimeout(()=>e.lookup.focus(),0)}
+function openEdit(mid){const m=movies.find(x=>x.id===mid);if(!m)return;reset();e.lookupArea.classList.add('hidden');e.dialogTitle.textContent='Edit movie';e.dialogSub.textContent='Update your tracking details directly on the page.';Object.entries({editingId:m.id,tmdbId:m.tmdbId||'',posterPath:m.posterPath||'',tmdbRating:m.tmdbRating||'',runtime:m.runtime||'',genres:m.genres||'',releaseDate:m.releaseDate||'',title:m.title||'',year:m.year||'',status:m.status||'watchlist',myRating:m.myRating||'',watchedDate:m.watchedDate||'',plot:m.plot||'',notes:m.notes||''}).forEach(([k,v])=>e[k].value=v);e.movieDialog.showModal()}
+function note(msg,type){e.notice.className='notice '+(type==='err'?'err':'info');e.notice.textContent=msg}
+async function api(path,signal){const t=localStorage.getItem(TOKEN);if(!t)throw Error('TMDB token not configured.');const r=await fetch(API+path,{headers:{accept:'application/json',Authorization:'Bearer '+t},signal});if(r.status===401)throw Error('TMDB rejected the token.');if(r.status===429)throw Error('TMDB rate limit reached. Try again shortly.');if(!r.ok)throw Error('TMDB request failed ('+r.status+').');return r.json()}
+function schedule(){clearTimeout(timer);const q=e.lookup.value.trim();e.results.classList.add('hidden');if(q.length<2)return;timer=setTimeout(()=>search(q),450)}
+async function search(q){if(abort)abort.abort();abort=new AbortController();try{const d=await api('/search/movie?query='+encodeURIComponent(q)+'&include_adult=false&language=en-GB&page=1',abort.signal);showResults((d.results||[]).slice(0,8))}catch(err){if(err.name!=='AbortError')note(err.message,'err')}}
+function showResults(list){e.results.innerHTML=list.length?list.map(m=>`<button class="result" type="button" data-tmdb="${m.id}">${m.poster_path?`<img src="${esc(pic(m.poster_path))}" alt="">`:'<div></div>'}<span><span class="rtitle">${esc(m.title)}</span><span class="rmeta">${esc(m.release_date?m.release_date.slice(0,4):'Year unknown')}${m.vote_average?' • TMDB '+Number(m.vote_average).toFixed(1)+'/10':''}</span></span></button>`).join(''):'<div style="padding:12px">No films found.</div>';e.results.classList.remove('hidden')}
+async function choose(tmdb){e.results.classList.add('hidden');note('Loading movie details...','info');try{const m=await api('/movie/'+encodeURIComponent(tmdb)+'?language=en-GB');e.tmdbId.value=m.id||'';e.posterPath.value=m.poster_path||'';e.tmdbRating.value=m.vote_average||'';e.runtime.value=m.runtime||'';e.genres.value=(m.genres||[]).map(g=>g.name).join(', ');e.releaseDate.value=m.release_date||'';e.title.value=m.title||'';e.year.value=m.release_date?m.release_date.slice(0,4):'';e.plot.value=m.overview||'';e.preview.innerHTML=`<div class="preview">${m.poster_path?`<img src="${esc(pic(m.poster_path))}" alt="">`:'<div></div>'}<div><h3>${esc(m.title)}</h3><p>${esc(m.release_date?m.release_date.slice(0,4):'')}</p><p>${esc([m.runtime?m.runtime+' min':'',(m.genres||[]).map(g=>g.name).join(', '),m.vote_average?'TMDB '+Number(m.vote_average).toFixed(1)+'/10':''].filter(Boolean).join(' • '))}</p></div></div>`;e.preview.classList.remove('hidden');note('Movie found. Add your status, rating or notes, then save.','info')}catch(err){note(err.message,'err')}}
+function submit(ev){ev.preventDefault();const existing=movies.find(x=>x.id===e.editingId.value),now=new Date().toISOString(),m={id:existing?.id||id(),tmdbId:e.tmdbId.value?Number(e.tmdbId.value):null,title:e.title.value.trim(),year:e.year.value?Number(e.year.value):null,releaseDate:e.releaseDate.value,posterPath:e.posterPath.value,plot:e.plot.value.trim(),tmdbRating:e.tmdbRating.value?Number(e.tmdbRating.value):null,runtime:e.runtime.value?Number(e.runtime.value):null,genres:e.genres.value,status:e.status.value,myRating:e.myRating.value?Number(e.myRating.value):null,watchedDate:e.watchedDate.value,notes:e.notes.value.trim(),addedAt:existing?.addedAt||now,updatedAt:now};if(!m.title)return;if(!existing&&m.tmdbId&&movies.some(x=>x.tmdbId===m.tmdbId)&&!confirm('This movie is already in your tracker. Add another copy?'))return;movies=existing?movies.map(x=>x.id===existing.id?m:x):[...movies,m];save();render();e.movieDialog.close();toast(existing?'Movie updated':'Movie added')}
+function del(mid){const m=movies.find(x=>x.id===mid);if(m&&confirm('Delete "'+m.title+'" from your tracker?')){movies=movies.filter(x=>x.id!==mid);save();render();toast('Movie deleted')}}
+function exportData(){const b=new Blob([JSON.stringify({version:1,exportedAt:new Date().toISOString(),movies},null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='movie-tracker-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(u);toast('Backup exported')}
+async function importData(ev){const f=ev.target.files?.[0];ev.target.value='';if(!f)return;try{const d=JSON.parse(await f.text()),list=Array.isArray(d)?d:d.movies;if(!Array.isArray(list))throw Error('No movie list found.');if(movies.length&&!confirm('Replace the movies currently stored in this browser?'))return;movies=list;save();render();toast('Backup imported')}catch(err){alert('Import failed: '+err.message)}}
+function toast(msg){clearTimeout(toastTimer);e.toast.textContent=msg;e.toast.classList.add('show');toastTimer=setTimeout(()=>e.toast.classList.remove('show'),2000)}
+e.addBtn.onclick=openAdd;e.settingsBtn.onclick=()=>{e.token.value=localStorage.getItem(TOKEN)||'';e.settingsDialog.showModal()};e.exportBtn.onclick=exportData;e.importFile.onchange=importData;
+$('closeMovie').onclick=()=>e.movieDialog.close();$('cancelMovie').onclick=()=>e.movieDialog.close();e.form.onsubmit=submit;e.lookup.oninput=schedule;e.results.onclick=ev=>{const b=ev.target.closest('[data-tmdb]');if(b)choose(b.dataset.tmdb)};
+e.localSearch.oninput=render;e.filter.onchange=render;e.sort.onchange=render;e.grid.onclick=ev=>{const b=ev.target.closest('[data-action]');if(!b)return;if(b.dataset.action==='add')openAdd();if(b.dataset.action==='edit')openEdit(b.dataset.id);if(b.dataset.action==='delete')del(b.dataset.id)};
+$('closeSettings').onclick=()=>e.settingsDialog.close();$('settingsForm').onsubmit=ev=>{ev.preventDefault();const t=e.token.value.trim();t?localStorage.setItem(TOKEN,t):localStorage.removeItem(TOKEN);e.settingsDialog.close();toast(t?'TMDB token saved':'TMDB token cleared')};$('clearToken').onclick=()=>{localStorage.removeItem(TOKEN);e.token.value='';toast('TMDB token cleared')};
+render();
+})();
+</script>
+</body></html>
