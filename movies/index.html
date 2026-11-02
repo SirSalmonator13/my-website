@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Cameron's Movie Tracker">
+  <title>Movie Tracker | Cameron's Stuff</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="nav-container">
+      <a class="site-title" href="../">Cameron's Stuff</a>
+
+      <nav aria-label="Main navigation">
+        <ul class="nav-links">
+          <li><a href="../">Home</a></li>
+          <li><a href="./" aria-current="page">Movie Tracker</a></li>
+          <li>
+            <a href="https://brickfolio-cameron.comtek-syste-2028.chatgpt.site/"
+               target="_blank"
+               rel="noopener noreferrer">LEGO Collection</a>
+          </li>
+          <li><a href="../#lists">Useful Lists</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-inner">
+        <p class="eyebrow">Watchlist</p>
+        <h1>Movie Tracker</h1>
+        <p class="hero-copy">
+          Keep track of films you want to watch, what you've seen, and your own ratings.
+        </p>
+
+        <div class="hero-actions">
+          <a class="button button-primary" href="#watchlist">Watchlist</a>
+          <a class="button button-secondary" href="#watched">Watched</a>
+          <a class="button button-secondary" href="../">Back Home</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="watchlist" class="section">
+      <div class="content">
+        <div class="section-heading">
+          <p class="section-kicker">Up next</p>
+          <h2>Watchlist</h2>
+          <p>Films you want to watch can go here.</p>
+        </div>
+
+        <div class="feature-card">
+          <div>
+            <h3>Your watchlist</h3>
+            <p>This section is ready for your first movie entries.</p>
+          </div>
+          <a class="button button-small" href="#watchlist">Coming soon</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="watched" class="section section-tint">
+      <div class="content">
+        <div class="section-heading">
+          <p class="section-kicker">History</p>
+          <h2>Watched</h2>
+          <p>Keep a record of films you've watched, ratings, dates and notes.</p>
+        </div>
+
+        <div class="feature-card feature-card-highlight">
+          <div>
+            <h3>Viewing history</h3>
+            <p>This section is ready for completed films and personal ratings.</p>
+          </div>
+          <a class="button button-small" href="#watched">Coming soon</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; <span id="year"></span> Cameron's Stuff</p>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+
+</body>
+</html>
